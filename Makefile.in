@@ -1,0 +1,52 @@
+INSTALL = @INSTALL@
+MKDIR_P = @MKDIR_P@
+SED = @SED@
+GIT = @GIT@
+BASENAME = @BASENAME@
+DIRNAME = @DIRNAME@
+
+.PHONY: clean
+
+DIRECTORIES = packages
+REPOSITORIES = https://github.com/christian-brunello/databuf.git
+
+LIBRARIES = packages/databuf/src/libdatabuf.la \
+	    packages/guile-databuf/databuf/guile-databuf.la
+
+EXECUTABLES = packages/conf-service/src/conf-service
+
+all: packages $(LIBRARIES) $(EXECUTABLES)
+	echo "DONE"
+
+packages:
+	if ! test -d $@; then $(MKDIR_P) $@; fi
+
+packages/databuf/configure:
+	cd packages && $(GIT) clone https://github.com/christian-brunello/databuf.git;
+
+packages/guile-databuf/configure:
+	cd packages && $(GIT) clone https://github.com/christian-brunello/guile-databuf.git; \
+
+packages/conf-service/configure:
+	cd packages && $(GIT) clone https://github.com/christian-brunello/conf-service.git; \
+
+packages/databuf/Makefile: packages/databuf/configure
+	cd `$(DIRNAME) $<` && ./configure
+
+packages/guile-databuf/Makefile: packages/guile-databuf/configure
+	cd `$(DIRNAME) $<` && ./configure
+
+packages/conf-service/Makefile: packages/conf-service/configure
+	cd `$(DIRNAME) $<` && ./configure
+
+packages/databuf/src/libdatabuf.la: packages/databuf/Makefile
+	cd `$(DIRNAME) $<` && make
+
+packages/guile-databuf/databuf/guile-databuf.la: packages/guile-databuf/Makefile
+	cd `$(DIRNAME) $<` && make
+
+packages/conf-service/src/conf-service: packages/conf-service/Makefile
+	cd `$(DIRNAME) $<` && make
+
+clean:
+	rm -rf $(DIRECTORIES);
